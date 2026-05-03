@@ -5,7 +5,10 @@
   "main": "main.js",
   "scripts": {
     "dev": "rollup -c -w",
-    "build": "rollup -c --environment BUILD:production",
+    "build": "rollup -c --environment BUILD:production && rollup -c rollup.cli.config.js",
+    "build:plugin": "rollup -c --environment BUILD:production",
+    "build:cli": "rollup -c rollup.cli.config.js",
+    "build:all": "npm run build:plugin && npm run build:cli",
     "test": "vitest",
     "format": "prettier --write ."
   },
