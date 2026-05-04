@@ -10,10 +10,10 @@ Implements modules:
 
 ## Tasks
 
-- [ ] Implement marking logic in rollover(): when `markForwardedOnRollover` is true, replace `[ ]` with `[>]` in yesterday's note for rolled-over todos
-- [ ] Handle child todos: when `rolloverChildren` is enabled, mark child checkbox items with `[>]` but leave plain text unchanged
-- [ ] Write tests for marking logic: basic marking, child handling, interaction with `deleteOnComplete`
-- [ ] Verify undo functionality works correctly (existing mechanism should handle it)
+- [x] Implement marking logic in rollover(): when `markForwardedOnRollover` is true, replace `[ ]` with `[>]` in yesterday's note for rolled-over todos
+- [x] Handle child todos: when `rolloverChildren` is enabled, mark child checkbox items with `[>]` but leave plain text unchanged
+- [x] Write tests for marking logic: basic marking, child handling, interaction with `deleteOnComplete`
+- [x] Verify undo functionality works correctly (existing mechanism should handle it)
 
 ## Notes
 

@@ -7,6 +7,7 @@ import {
 import UndoModal from "./ui/UndoModal";
 import RolloverSettingTab from "./ui/RolloverSettingTab";
 import { getTodos } from "./get-todos";
+import { markTodos } from "./mark-todos";
 import { DEFAULT_SETTINGS } from "./settings";
 
 const MAX_TIME_SINCE_CREATION = 5000; // 5 seconds
@@ -195,6 +196,7 @@ export default class RolloverTodosPlugin extends Plugin {
         deleteOnComplete,
         removeEmptyTodos,
         leadingNewLine,
+        markForwardedOnRollover,
       } = this.settings;
 
       // check if there is a daily note from yesterday
@@ -283,22 +285,48 @@ export default class RolloverTodosPlugin extends Plugin {
         await this.app.vault.modify(file, dailyNoteContent);
       }
 
-      // if deleteOnComplete, get yesterday's content and modify it
-      if (deleteOnComplete) {
+      // Handle marking and/or deletion of yesterday's todos
+      if (markForwardedOnRollover || deleteOnComplete) {
         let lastDailyNoteContent = await this.app.vault.read(lastDailyNote);
+
+        // Store original content for undo BEFORE any modifications
         undoHistoryInstance.previousDay = {
           file: lastDailyNote,
           oldContent: `${lastDailyNoteContent}`,
         };
-        let lines = lastDailyNoteContent.split("\n");
 
-        for (let i = lines.length; i >= 0; i--) {
-          if (todos_yesterday.includes(lines[i])) {
-            lines.splice(i, 1);
-          }
+        let modifiedContent = lastDailyNoteContent;
+
+        // Mark forwarded todos if enabled (must happen before deletion)
+        if (markForwardedOnRollover) {
+          const lines = modifiedContent.split("\n");
+          const markedLines = markTodos({
+            lines,
+            todosToMark: todos_yesterday,
+          });
+          modifiedContent = markedLines.join("\n");
         }
 
-        const modifiedContent = lines.join("\n");
+        // Delete todos if enabled (operates on potentially marked content)
+        if (deleteOnComplete) {
+          let lines = modifiedContent.split("\n");
+
+          // When marking is enabled, match against marked versions for deletion
+          const todosToDelete = markForwardedOnRollover
+            ? markTodos({
+                lines: todos_yesterday,
+                todosToMark: todos_yesterday,
+              })
+            : todos_yesterday;
+
+          for (let i = lines.length - 1; i >= 0; i--) {
+            if (todosToDelete.includes(lines[i])) {
+              lines.splice(i, 1);
+            }
+          }
+          modifiedContent = lines.join("\n");
+        }
+
         await this.app.vault.modify(lastDailyNote, modifiedContent);
       }
 
