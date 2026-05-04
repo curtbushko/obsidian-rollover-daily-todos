@@ -75,6 +75,11 @@ class TodoParser {
       this.doneStatusMarkers.includes(char)
     );
 
+    // Exclude forwarded tasks marked with [>] (hardcoded, separate from doneStatusMarkers)
+    if (singleChar === '>') {
+      return false;
+    }
+
     // Return true (is a todo) if it does NOT contain any done markers
     return !hasDoneMarker;
   }

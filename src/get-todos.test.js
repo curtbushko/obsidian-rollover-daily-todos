@@ -535,3 +535,69 @@ test("should not match malformed todos", () => {
   const todos = getTodos({ lines });
   expect(todos).toStrictEqual(["- [ ] valid todo"]);
 });
+
+test("should exclude tasks with [>] forwarded marker", () => {
+  // GIVEN - Lines containing forwarded and regular tasks
+  const lines = [
+    "- [>] forwarded task",
+    "- [ ] regular task",
+    "- [>] another forwarded task",
+  ];
+
+  // WHEN - getTodos() is called
+  const todos = getTodos({ lines });
+
+  // THEN - Only the regular task is returned, [>] tasks are excluded
+  expect(todos).toStrictEqual(["- [ ] regular task"]);
+});
+
+test("should NOT exclude [> ] (space after >)", () => {
+  // GIVEN - [> ] has a space after >, making it not exactly one grapheme
+  // This is an invalid checkbox format (2 chars), so it's not recognized as a todo at all
+  const lines = [
+    "- [> ] task with space after >",
+    "- [ ] normal task",
+  ];
+
+  // WHEN - getTodos() is called
+  const todos = getTodos({ lines });
+
+  // THEN - [> ] is not a valid checkbox (2 graphemes), only normal task is returned
+  // The [>] exclusion rule doesn't apply because [> ] isn't a valid todo to begin with
+  expect(todos).toStrictEqual(["- [ ] normal task"]);
+});
+
+test("should NOT exclude [>>] (double >)", () => {
+  // GIVEN - [>>] has double >, making it not exactly one grapheme
+  // This is an invalid checkbox format (2 chars), so it's not recognized as a todo at all
+  const lines = [
+    "- [>>] task with double >",
+    "- [ ] normal task",
+  ];
+
+  // WHEN - getTodos() is called
+  const todos = getTodos({ lines });
+
+  // THEN - [>>] is not a valid checkbox (2 graphemes), only normal task is returned
+  // The [>] exclusion rule doesn't apply because [>>] isn't a valid todo to begin with
+  expect(todos).toStrictEqual(["- [ ] normal task"]);
+});
+
+test("should handle mixed markers correctly", () => {
+  // GIVEN - Lines with various marker types: [>], [x], [ ], [/]
+  const lines = [
+    "- [>] forwarded task",
+    "- [x] done task",
+    "- [ ] todo task",
+    "- [/] in-progress task",
+  ];
+
+  // WHEN - getTodos() is called
+  const todos = getTodos({ lines });
+
+  // THEN - Only [ ] and [/] are returned; [>] and [x] are excluded
+  expect(todos).toStrictEqual([
+    "- [ ] todo task",
+    "- [/] in-progress task",
+  ]);
+});

@@ -1,0 +1,24 @@
+project: "mark-forwarded-on-rollover"
+prd: "prd-mark-forwarded-on-rollover.md"
+current_phase: 2
+phases:
+  - id: 1
+    name: "TodoParser Exclusion"
+    file: "phase-01-todoparser-exclusion.md"
+    status: completed
+    progress: "2/2"
+  - id: 2
+    name: "Settings Infrastructure"
+    file: "phase-02-settings-infrastructure.md"
+    status: pending
+    progress: "0/3"
+  - id: 3
+    name: "Plugin Marking Logic"
+    file: "phase-03-plugin-marking-logic.md"
+    status: pending
+    progress: "0/4"
+  - id: 4
+    name: "CLI Implementation"
+    file: "phase-04-cli-implementation.md"
+    status: pending
+    progress: "0/3"

@@ -1,0 +1,19 @@
+project: "mark-forwarded-on-rollover"
+phase_id: 1
+phase_name: "TodoParser Exclusion"
+phase_file: "phase-01-todoparser-exclusion.md"
+execution_order: [1, 2]
+tasks:
+  - id: 1
+    name: "Add basic [>] exclusion logic and test"
+    status: completed
+    deps: []
+    plan_tasks:
+      - "Add `[>]` exclusion logic to TodoParser `#isTodo()` method, separate from `doneStatusMarkers`"
+      - "Write tests for `[>]` task exclusion (basic case: `[>]` tasks are not returned by getTodos)"
+  - id: 2
+    name: "Add edge case tests for [>] exclusion"
+    status: completed
+    deps: [1]
+    plan_tasks:
+      - "Write edge case tests: `[> ]` (space after), `[>>]` (double), mixed markers"
