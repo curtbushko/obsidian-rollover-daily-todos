@@ -153,6 +153,37 @@ const getTodos = ({
   return todoParser.getTodos();
 };
 
+/**
+ * Marks todos as forwarded by replacing [ ] with [>] for todos in the todosToMark list.
+ *
+ * Child handling behavior:
+ * - Child checkbox items (e.g., "    - [ ] task") are marked with [>]
+ * - Plain text children (e.g., "    - plain text") are preserved unchanged
+ * - Completed [x] or already forwarded [>] checkboxes are not modified
+ * - Works at any indentation level
+ *
+ * @param {Object} options - The options object
+ * @param {string[]} options.lines - Array of lines from the note
+ * @param {string[]} options.todosToMark - Array of todo lines that should be marked as forwarded
+ * @returns {string[]} - Array of lines with specified todos marked as forwarded
+ */
+const markTodos = ({ lines, todosToMark }) => {
+  // Create a Set for O(1) lookup of todos to mark
+  const todosSet = new Set(todosToMark);
+
+  return lines.map((line) => {
+    // Check if this line is in the todosToMark list
+    if (todosSet.has(line)) {
+      // Only replace [ ] (unchecked) with [>], not already marked or completed todos
+      // This regex matches: optional whitespace, bullet symbol (-, +, *), space, [ ]
+      // and preserves everything else (indentation, bullet type, rest of content)
+      const replaced = line.replace(/^(\s*[*+-] )\[ \](.*)$/, "$1[>]$2");
+      return replaced;
+    }
+    return line;
+  });
+};
+
 // Simple date formatting supporting multiple formats
 function formatDate(date, format = "YYYY-MM-DD") {
   const year = date.getFullYear();
@@ -261,6 +292,7 @@ async function rollover(vaultPath, settings = {}) {
   const deleteOnComplete = settings.deleteOnComplete || false;
   const removeEmptyTodos = settings.removeEmptyTodos || false;
   const leadingNewLine = settings.leadingNewLine !== false;
+  const markForwardedOnRollover = settings.markForwardedOnRollover || false;
 
   // Get today's daily note
   const todayFile = getTodaysDailyNote(vaultPath, folder, format);
@@ -337,18 +369,41 @@ async function rollover(vaultPath, settings = {}) {
   // Write updated today's note
   writeFileSync(todayFile.path, dailyNoteContent, "utf-8");
 
-  // Delete from yesterday if needed
-  if (deleteOnComplete) {
+  // Handle marking and/or deletion of yesterday's todos
+  if (markForwardedOnRollover || deleteOnComplete) {
     let lastDailyNoteContent = readFileSync(lastDailyNote.path, "utf-8");
-    let lines = lastDailyNoteContent.split("\n");
+    let modifiedContent = lastDailyNoteContent;
 
-    for (let i = lines.length - 1; i >= 0; i--) {
-      if (todosYesterday.includes(lines[i])) {
-        lines.splice(i, 1);
-      }
+    // Mark forwarded todos if enabled (must happen before deletion)
+    if (markForwardedOnRollover) {
+      const lines = modifiedContent.split("\n");
+      const markedLines = markTodos({
+        lines,
+        todosToMark: todosYesterday,
+      });
+      modifiedContent = markedLines.join("\n");
     }
 
-    const modifiedContent = lines.join("\n");
+    // Delete todos if enabled (operates on potentially marked content)
+    if (deleteOnComplete) {
+      let lines = modifiedContent.split("\n");
+
+      // When marking is enabled, match against marked versions for deletion
+      const todosToDelete = markForwardedOnRollover
+        ? markTodos({
+            lines: todosYesterday,
+            todosToMark: todosYesterday,
+          })
+        : todosYesterday;
+
+      for (let i = lines.length - 1; i >= 0; i--) {
+        if (todosToDelete.includes(lines[i])) {
+          lines.splice(i, 1);
+        }
+      }
+      modifiedContent = lines.join("\n");
+    }
+
     writeFileSync(lastDailyNote.path, modifiedContent, "utf-8");
   }
 

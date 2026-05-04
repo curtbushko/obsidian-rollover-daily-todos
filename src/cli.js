@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync, readdirSync, statSync } from "fs";
 import { join, basename, extname } from "path";
 import { getTodos } from "./get-todos.js";
+import { markTodos } from "./mark-todos.js";
 
 // Simple date formatting supporting multiple formats
 function formatDate(date, format = "YYYY-MM-DD") {
@@ -110,6 +111,7 @@ async function rollover(vaultPath, settings = {}) {
   const deleteOnComplete = settings.deleteOnComplete || false;
   const removeEmptyTodos = settings.removeEmptyTodos || false;
   const leadingNewLine = settings.leadingNewLine !== false;
+  const markForwardedOnRollover = settings.markForwardedOnRollover || false;
 
   // Get today's daily note
   const todayFile = getTodaysDailyNote(vaultPath, folder, format);
@@ -186,18 +188,41 @@ async function rollover(vaultPath, settings = {}) {
   // Write updated today's note
   writeFileSync(todayFile.path, dailyNoteContent, "utf-8");
 
-  // Delete from yesterday if needed
-  if (deleteOnComplete) {
+  // Handle marking and/or deletion of yesterday's todos
+  if (markForwardedOnRollover || deleteOnComplete) {
     let lastDailyNoteContent = readFileSync(lastDailyNote.path, "utf-8");
-    let lines = lastDailyNoteContent.split("\n");
+    let modifiedContent = lastDailyNoteContent;
 
-    for (let i = lines.length - 1; i >= 0; i--) {
-      if (todosYesterday.includes(lines[i])) {
-        lines.splice(i, 1);
-      }
+    // Mark forwarded todos if enabled (must happen before deletion)
+    if (markForwardedOnRollover) {
+      const lines = modifiedContent.split("\n");
+      const markedLines = markTodos({
+        lines,
+        todosToMark: todosYesterday,
+      });
+      modifiedContent = markedLines.join("\n");
     }
 
-    const modifiedContent = lines.join("\n");
+    // Delete todos if enabled (operates on potentially marked content)
+    if (deleteOnComplete) {
+      let lines = modifiedContent.split("\n");
+
+      // When marking is enabled, match against marked versions for deletion
+      const todosToDelete = markForwardedOnRollover
+        ? markTodos({
+            lines: todosYesterday,
+            todosToMark: todosYesterday,
+          })
+        : todosYesterday;
+
+      for (let i = lines.length - 1; i >= 0; i--) {
+        if (todosToDelete.includes(lines[i])) {
+          lines.splice(i, 1);
+        }
+      }
+      modifiedContent = lines.join("\n");
+    }
+
     writeFileSync(lastDailyNote.path, modifiedContent, "utf-8");
   }
 

@@ -10,9 +10,9 @@ Implements modules:
 
 ## Tasks
 
-- [ ] Load `markForwardedOnRollover` setting from data.json in CLI settings loading
-- [ ] Implement marking logic in CLI rollover function, mirroring plugin behavior exactly
-- [ ] Write CLI tests for marking logic
+- [x] Load `markForwardedOnRollover` setting from data.json in CLI settings loading
+- [x] Implement marking logic in CLI rollover function, mirroring plugin behavior exactly
+- [x] Write CLI tests for marking logic
 
 ## Notes
 

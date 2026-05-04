@@ -1,30 +1,24 @@
 project: "mark-forwarded-on-rollover"
-phase_id: 3
-phase_name: "Plugin Marking Logic"
-phase_file: "phase-03-plugin-marking-logic.md"
-execution_order: [1, 2, 3, 4]
+phase_id: 4
+phase_name: "CLI Implementation"
+phase_file: "phase-04-cli-implementation.md"
+execution_order: [1, 2, 3]
 tasks:
   - id: 1
-    name: "Create marking utility function with tests"
+    name: "Import markTodos and prepare CLI for marking"
     status: completed
     deps: []
     plan_tasks:
-      - "Implement marking logic in rollover(): when `markForwardedOnRollover` is true, replace `[ ]` with `[>]` in yesterday's note for rolled-over todos"
+      - "Load `markForwardedOnRollover` setting from data.json in CLI settings loading"
   - id: 2
-    name: "Handle child todos in marking logic"
+    name: "Implement marking logic in CLI rollover function"
     status: completed
     deps: [1]
     plan_tasks:
-      - "Handle child todos: when `rolloverChildren` is enabled, mark child checkbox items with `[>]` but leave plain text unchanged"
+      - "Implement marking logic in CLI rollover function, mirroring plugin behavior exactly"
   - id: 3
-    name: "Integrate marking into rollover() method"
+    name: "Write CLI tests for marking behavior"
     status: completed
     deps: [2]
     plan_tasks:
-      - "Write tests for marking logic: basic marking, child handling, interaction with `deleteOnComplete`"
-  - id: 4
-    name: "Verify undo functionality with marking"
-    status: completed
-    deps: [3]
-    plan_tasks:
-      - "Verify undo functionality works correctly (existing mechanism should handle it)"
+      - "Write CLI tests for marking logic"
