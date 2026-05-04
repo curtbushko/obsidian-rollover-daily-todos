@@ -62,7 +62,7 @@ class TodoParser {
     const singleChar = contentChars[0];
 
     // Exclude grapheme modifiers that are not valid as standalone content
-    const graphemeModifiers = ['\u202E', '\u200B', '\u200C', '\u200D'];
+    const graphemeModifiers = ["\u202E", "\u200B", "\u200C", "\u200D"];
     const hasGraphemeModifier = contentChars.some((char) =>
       graphemeModifiers.includes(char)
     );
@@ -76,7 +76,7 @@ class TodoParser {
     );
 
     // Exclude forwarded tasks marked with [>] (hardcoded, separate from doneStatusMarkers)
-    if (singleChar === '>') {
+    if (singleChar === ">") {
       return false;
     }
 

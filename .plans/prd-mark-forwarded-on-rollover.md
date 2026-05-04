@@ -63,13 +63,13 @@ Tasks marked `[>]` must be excluded from future rollovers:
 
 ### Interaction with Other Settings
 
-| Setting | Interaction |
-|---------|-------------|
-| `deleteOnComplete` | Orthogonal - operates on done tasks `[x]`, `[X]`, `[-]` while `markForwardedOnRollover` operates on incomplete tasks `[ ]` |
-| `removeEmptyTodos` | Compatible - empty todos are filtered before marking |
-| `rolloverChildren` | Compatible - child checkbox items also get marked `[>]` |
-| `rolloverOnFileCreate` | Compatible - marking happens regardless of trigger method |
-| `doneStatusMarkers` | Separate - `>` is never added to this setting |
+| Setting                | Interaction                                                                                                                |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `deleteOnComplete`     | Orthogonal - operates on done tasks `[x]`, `[X]`, `[-]` while `markForwardedOnRollover` operates on incomplete tasks `[ ]` |
+| `removeEmptyTodos`     | Compatible - empty todos are filtered before marking                                                                       |
+| `rolloverChildren`     | Compatible - child checkbox items also get marked `[>]`                                                                    |
+| `rolloverOnFileCreate` | Compatible - marking happens regardless of trigger method                                                                  |
+| `doneStatusMarkers`    | Separate - `>` is never added to this setting                                                                              |
 
 ### Undo Support
 
@@ -78,6 +78,7 @@ The existing undo mechanism stores previous file state before modification. No c
 ### CLI Parity
 
 The CLI must implement identical marking logic:
+
 - Load `markForwardedOnRollover` from settings JSON
 - Apply marking logic to yesterday's note when enabled
 - Mirror the plugin behavior exactly
@@ -87,6 +88,7 @@ The CLI must implement identical marking logic:
 ### What Makes a Good Test
 
 Tests should verify external behavior, not implementation details:
+
 - Given specific input (note content, settings), verify expected output (modified content, todos extracted)
 - Test edge cases and interactions between settings
 - Don't test internal method calls or private state
@@ -94,12 +96,14 @@ Tests should verify external behavior, not implementation details:
 ### Modules to Test
 
 **1. TodoParser - Forwarded Task Exclusion**
+
 - `[>]` tasks are excluded from rollover
 - `[>]` exclusion works independently of `doneStatusMarkers`
 - Tasks with `>` in `doneStatusMarkers` are still excluded (belt and suspenders)
 - Edge cases: `[> ]` (space after), `[>>]` (double), `[>x]` (combined markers)
 
 **2. Rollover Marking Logic**
+
 - `[ ]` becomes `[>]` when `markForwardedOnRollover: true`
 - No changes when `markForwardedOnRollover: false`
 - Child todos with checkboxes are marked
@@ -108,17 +112,20 @@ Tests should verify external behavior, not implementation details:
 - Interaction with `deleteOnComplete` (both can be enabled)
 
 **3. Settings**
+
 - Default value is `false`
 - Setting persists correctly
 - Setting loads correctly on plugin/CLI start
 
 **4. CLI**
+
 - Marking works identically to plugin
 - Setting is loaded from data.json
 
 ### Prior Art for Tests
 
 Follow patterns from existing tests:
+
 - Use Vitest with AAA pattern (Arrange-Act-Assert)
 - Test filtering logic with various checkbox contents
 - Test edge cases with Unicode and special characters
@@ -147,6 +154,7 @@ The `[>]` marker is a recognized convention in the Obsidian ecosystem, particula
 ### Iteration Order for Marking
 
 When marking todos in yesterday's note, iterate through the lines carefully:
+
 - Match exact todo lines (same content as extracted)
 - Replace only the checkbox portion `[ ]` → `[>]`
 - Preserve the rest of the line including indentation

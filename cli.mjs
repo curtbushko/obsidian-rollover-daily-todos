@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import { readFileSync, writeFileSync, statSync, readdirSync } from 'fs';
-import { join, basename } from 'path';
+import { readFileSync, writeFileSync, statSync, readdirSync } from "fs";
+import { join, basename } from "path";
 
 class TodoParser {
   // Support all unordered list bullet symbols as per spec (https://daringfireball.net/projects/markdown/syntax#list)
@@ -63,10 +63,10 @@ class TodoParser {
       return false;
     }
 
-    contentChars[0];
+    const singleChar = contentChars[0];
 
     // Exclude grapheme modifiers that are not valid as standalone content
-    const graphemeModifiers = ['\u202E', '\u200B', '\u200C', '\u200D'];
+    const graphemeModifiers = ["\u202E", "\u200B", "\u200C", "\u200D"];
     const hasGraphemeModifier = contentChars.some((char) =>
       graphemeModifiers.includes(char)
     );
@@ -78,6 +78,11 @@ class TodoParser {
     const hasDoneMarker = contentChars.some((char) =>
       this.doneStatusMarkers.includes(char)
     );
+
+    // Exclude forwarded tasks marked with [>] (hardcoded, separate from doneStatusMarkers)
+    if (singleChar === ">") {
+      return false;
+    }
 
     // Return true (is a todo) if it does NOT contain any done markers
     return !hasDoneMarker;
@@ -149,12 +154,12 @@ const getTodos = ({
 };
 
 // Simple date formatting supporting multiple formats
-function formatDate(date, format = 'YYYY-MM-DD') {
+function formatDate(date, format = "YYYY-MM-DD") {
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
 
-  if (format === 'YYYYMMDD') {
+  if (format === "YYYYMMDD") {
     return `${year}${month}${day}`;
   }
   // Default YYYY-MM-DD
@@ -162,16 +167,16 @@ function formatDate(date, format = 'YYYY-MM-DD') {
 }
 
 // Parse date from various formats
-function parseDate(dateStr, format = 'YYYY-MM-DD') {
+function parseDate(dateStr, format = "YYYY-MM-DD") {
   let year, month, day;
 
-  if (format === 'YYYYMMDD' && /^\d{8}$/.test(dateStr)) {
+  if (format === "YYYYMMDD" && /^\d{8}$/.test(dateStr)) {
     year = parseInt(dateStr.substring(0, 4), 10);
     month = parseInt(dateStr.substring(4, 6), 10);
     day = parseInt(dateStr.substring(6, 8), 10);
   } else {
     // Try YYYY-MM-DD format
-    const parts = dateStr.split('-').map(Number);
+    const parts = dateStr.split("-").map(Number);
     if (parts.length === 3) {
       [year, month, day] = parts;
     } else {
@@ -183,18 +188,18 @@ function parseDate(dateStr, format = 'YYYY-MM-DD') {
 }
 
 // Get all daily note files
-function getDailyNoteFiles(vaultPath, folder, format = 'YYYY-MM-DD') {
+function getDailyNoteFiles(vaultPath, folder, format = "YYYY-MM-DD") {
   const dailyNotesPath = join(vaultPath, folder);
   const files = readdirSync(dailyNotesPath)
-    .filter(f => f.endsWith('.md'))
-    .map(f => {
+    .filter((f) => f.endsWith(".md"))
+    .map((f) => {
       const path = join(dailyNotesPath, f);
-      const name = basename(f, '.md');
+      const name = basename(f, ".md");
       return { path, name };
     })
-    .filter(f => {
+    .filter((f) => {
       // Check if filename matches expected format
-      if (format === 'YYYYMMDD') {
+      if (format === "YYYYMMDD") {
         return /^\d{8}$/.test(f.name);
       }
       // Default YYYY-MM-DD format
@@ -205,18 +210,18 @@ function getDailyNoteFiles(vaultPath, folder, format = 'YYYY-MM-DD') {
 }
 
 // Get the last daily note before today
-function getLastDailyNote(vaultPath, folder, format = 'YYYY-MM-DD') {
+function getLastDailyNote(vaultPath, folder, format = "YYYY-MM-DD") {
   const files = getDailyNoteFiles(vaultPath, folder, format);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
   // Filter files that are before today and sort by date descending
   const validFiles = files
-    .map(f => ({
+    .map((f) => ({
       ...f,
-      date: parseDate(f.name, format)
+      date: parseDate(f.name, format),
     }))
-    .filter(f => f.date && f.date < today)
+    .filter((f) => f.date && f.date < today)
     .sort((a, b) => b.date - a.date);
 
   // Return the most recent (yesterday or earlier)
@@ -224,7 +229,7 @@ function getLastDailyNote(vaultPath, folder, format = 'YYYY-MM-DD') {
 }
 
 // Get today's daily note
-function getTodaysDailyNote(vaultPath, folder, format = 'YYYY-MM-DD') {
+function getTodaysDailyNote(vaultPath, folder, format = "YYYY-MM-DD") {
   const today = formatDate(new Date(), format);
   const path = join(vaultPath, folder, `${today}.md`);
 
@@ -238,21 +243,21 @@ function getTodaysDailyNote(vaultPath, folder, format = 'YYYY-MM-DD') {
 
 // Get unfinished todos from a file
 function getAllUnfinishedTodos(filePath, settings) {
-  const content = readFileSync(filePath, 'utf-8');
+  const content = readFileSync(filePath, "utf-8");
   const lines = content.split(/\r?\n|\r|\n/g);
 
   return getTodos({
     lines,
     withChildren: settings.rolloverChildren || false,
-    doneStatusMarkers: settings.doneStatusMarkers || 'xX-'
+    doneStatusMarkers: settings.doneStatusMarkers || "xX-",
   });
 }
 
 // Main rollover function
 async function rollover(vaultPath, settings = {}) {
-  const folder = settings.folder || 'daily';
-  const format = settings.format || 'YYYY-MM-DD';
-  const templateHeading = settings.templateHeading || 'none';
+  const folder = settings.folder || "daily";
+  const format = settings.format || "YYYY-MM-DD";
+  const templateHeading = settings.templateHeading || "none";
   const deleteOnComplete = settings.deleteOnComplete || false;
   const removeEmptyTodos = settings.removeEmptyTodos || false;
   const leadingNewLine = settings.leadingNewLine !== false;
@@ -260,21 +265,23 @@ async function rollover(vaultPath, settings = {}) {
   // Get today's daily note
   const todayFile = getTodaysDailyNote(vaultPath, folder, format);
   if (!todayFile) {
-    console.log('Today\'s daily note not found');
+    console.log("Today's daily note not found");
     return;
   }
 
   // Get last daily note
   const lastDailyNote = getLastDailyNote(vaultPath, folder, format);
   if (!lastDailyNote) {
-    console.log('No previous daily note found');
+    console.log("No previous daily note found");
     return;
   }
 
   // Get unfinished todos from yesterday
   const todosYesterday = getAllUnfinishedTodos(lastDailyNote.path, settings);
 
-  console.log(`Found ${todosYesterday.length} todos in ${lastDailyNote.name}.md`);
+  console.log(
+    `Found ${todosYesterday.length} todos in ${lastDailyNote.name}.md`
+  );
 
   if (todosYesterday.length === 0) {
     return;
@@ -287,9 +294,9 @@ async function rollover(vaultPath, settings = {}) {
 
   if (removeEmptyTodos) {
     todosToday = [];
-    todosYesterday.forEach(line => {
-      const trimmedLine = (line || '').trim();
-      if (trimmedLine !== '- [ ]' && trimmedLine !== '- [  ]') {
+    todosYesterday.forEach((line) => {
+      const trimmedLine = (line || "").trim();
+      if (trimmedLine !== "- [ ]" && trimmedLine !== "- [  ]") {
         todosToday.push(line);
         todosAdded++;
       } else {
@@ -299,22 +306,22 @@ async function rollover(vaultPath, settings = {}) {
   }
 
   if (todosToday.length === 0) {
-    console.log('No todos to rollover after filtering empty todos');
+    console.log("No todos to rollover after filtering empty todos");
     return;
   }
 
   // Read today's daily note content
-  let dailyNoteContent = readFileSync(todayFile.path, 'utf-8');
-  const todosString = `\n${todosToday.join('\n')}`;
+  let dailyNoteContent = readFileSync(todayFile.path, "utf-8");
+  const todosString = `\n${todosToday.join("\n")}`;
 
   // Try to add under template heading if specified
-  let templateHeadingNotFoundMessage = '';
-  const templateHeadingSelected = templateHeading !== 'none';
+  let templateHeadingNotFoundMessage = "";
+  const templateHeadingSelected = templateHeading !== "none";
 
   if (templateHeadingSelected) {
     const contentAddedToHeading = dailyNoteContent.replace(
       templateHeading,
-      `${templateHeading}${leadingNewLine ? '\n' : ''}${todosString}`
+      `${templateHeading}${leadingNewLine ? "\n" : ""}${todosString}`
     );
 
     if (contentAddedToHeading === dailyNoteContent) {
@@ -328,12 +335,12 @@ async function rollover(vaultPath, settings = {}) {
   }
 
   // Write updated today's note
-  writeFileSync(todayFile.path, dailyNoteContent, 'utf-8');
+  writeFileSync(todayFile.path, dailyNoteContent, "utf-8");
 
   // Delete from yesterday if needed
   if (deleteOnComplete) {
-    let lastDailyNoteContent = readFileSync(lastDailyNote.path, 'utf-8');
-    let lines = lastDailyNoteContent.split('\n');
+    let lastDailyNoteContent = readFileSync(lastDailyNote.path, "utf-8");
+    let lines = lastDailyNoteContent.split("\n");
 
     for (let i = lines.length - 1; i >= 0; i--) {
       if (todosYesterday.includes(lines[i])) {
@@ -341,8 +348,8 @@ async function rollover(vaultPath, settings = {}) {
       }
     }
 
-    const modifiedContent = lines.join('\n');
-    writeFileSync(lastDailyNote.path, modifiedContent, 'utf-8');
+    const modifiedContent = lines.join("\n");
+    writeFileSync(lastDailyNote.path, modifiedContent, "utf-8");
   }
 
   // Report results
@@ -353,49 +360,59 @@ async function rollover(vaultPath, settings = {}) {
   }
 
   if (todosAdded > 0) {
-    parts.push(`${todosAdded} todo${todosAdded > 1 ? 's' : ''} rolled over.`);
+    parts.push(`${todosAdded} todo${todosAdded > 1 ? "s" : ""} rolled over.`);
   }
 
   if (emptiesToNotAddToTomorrow > 0) {
-    const action = deleteOnComplete ? 'removed' : 'skipped';
-    parts.push(`${emptiesToNotAddToTomorrow} empty todo${emptiesToNotAddToTomorrow > 1 ? 's' : ''} ${action}.`);
+    const action = deleteOnComplete ? "removed" : "skipped";
+    parts.push(
+      `${emptiesToNotAddToTomorrow} empty todo${
+        emptiesToNotAddToTomorrow > 1 ? "s" : ""
+      } ${action}.`
+    );
   }
 
   if (parts.length > 0) {
-    console.log(parts.join('\n'));
+    console.log(parts.join("\n"));
   }
 }
 
 // Load plugin settings from data.json
 function loadSettings(vaultPath) {
-  const settingsPath = join(vaultPath, '.obsidian', 'plugins', 'obsidian-rollover-daily-todos', 'data.json');
+  const settingsPath = join(
+    vaultPath,
+    ".obsidian",
+    "plugins",
+    "obsidian-rollover-daily-todos",
+    "data.json"
+  );
 
   try {
-    const data = JSON.parse(readFileSync(settingsPath, 'utf-8'));
+    const data = JSON.parse(readFileSync(settingsPath, "utf-8"));
     return data;
   } catch (err) {
-    console.log('Using default plugin settings (no data.json found)');
+    console.log("Using default plugin settings (no data.json found)");
     return {};
   }
 }
 
 // Load Obsidian daily notes settings
 function loadDailyNotesSettings(vaultPath) {
-  const dailyNotesPath = join(vaultPath, '.obsidian', 'daily-notes.json');
+  const dailyNotesPath = join(vaultPath, ".obsidian", "daily-notes.json");
 
   try {
-    const data = JSON.parse(readFileSync(dailyNotesPath, 'utf-8'));
+    const data = JSON.parse(readFileSync(dailyNotesPath, "utf-8"));
     return {
-      folder: data.folder || 'daily',
-      format: data.format || 'YYYY-MM-DD',
-      template: data.template || ''
+      folder: data.folder || "daily",
+      format: data.format || "YYYY-MM-DD",
+      template: data.template || "",
     };
   } catch (err) {
-    console.log('Using default daily notes settings');
+    console.log("Using default daily notes settings");
     return {
-      folder: 'daily',
-      format: 'YYYY-MM-DD',
-      template: ''
+      folder: "daily",
+      format: "YYYY-MM-DD",
+      template: "",
     };
   }
 }
@@ -409,15 +426,15 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   // Merge settings: daily notes settings for folder/format, plugin settings for behavior
   const settings = {
     ...dailyNotesSettings,
-    ...pluginSettings
+    ...pluginSettings,
   };
 
   rollover(vaultPath, settings)
     .then(() => {
-      console.log('Rollover complete');
+      console.log("Rollover complete");
     })
-    .catch(err => {
-      console.error('Error during rollover:', err);
+    .catch((err) => {
+      console.error("Error during rollover:", err);
       process.exit(1);
     });
 }

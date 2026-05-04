@@ -5,6 +5,7 @@
 Covers user story: #9 from prd-mark-forwarded-on-rollover.md
 
 Implements modules:
+
 - CLI (cli.js)
 
 ## Tasks

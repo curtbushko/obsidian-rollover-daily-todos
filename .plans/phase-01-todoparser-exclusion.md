@@ -5,6 +5,7 @@
 Covers user stories: #3, #4 from prd-mark-forwarded-on-rollover.md
 
 Implements modules:
+
 - TodoParser (get-todos.js) - add `[>]` exclusion logic
 
 ## Tasks

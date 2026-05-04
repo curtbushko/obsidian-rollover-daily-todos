@@ -554,10 +554,7 @@ test("should exclude tasks with [>] forwarded marker", () => {
 test("should NOT exclude [> ] (space after >)", () => {
   // GIVEN - [> ] has a space after >, making it not exactly one grapheme
   // This is an invalid checkbox format (2 chars), so it's not recognized as a todo at all
-  const lines = [
-    "- [> ] task with space after >",
-    "- [ ] normal task",
-  ];
+  const lines = ["- [> ] task with space after >", "- [ ] normal task"];
 
   // WHEN - getTodos() is called
   const todos = getTodos({ lines });
@@ -570,10 +567,7 @@ test("should NOT exclude [> ] (space after >)", () => {
 test("should NOT exclude [>>] (double >)", () => {
   // GIVEN - [>>] has double >, making it not exactly one grapheme
   // This is an invalid checkbox format (2 chars), so it's not recognized as a todo at all
-  const lines = [
-    "- [>>] task with double >",
-    "- [ ] normal task",
-  ];
+  const lines = ["- [>>] task with double >", "- [ ] normal task"];
 
   // WHEN - getTodos() is called
   const todos = getTodos({ lines });
@@ -596,8 +590,5 @@ test("should handle mixed markers correctly", () => {
   const todos = getTodos({ lines });
 
   // THEN - Only [ ] and [/] are returned; [>] and [x] are excluded
-  expect(todos).toStrictEqual([
-    "- [ ] todo task",
-    "- [/] in-progress task",
-  ]);
+  expect(todos).toStrictEqual(["- [ ] todo task", "- [/] in-progress task"]);
 });

@@ -7,6 +7,7 @@ import {
 import UndoModal from "./ui/UndoModal";
 import RolloverSettingTab from "./ui/RolloverSettingTab";
 import { getTodos } from "./get-todos";
+import { DEFAULT_SETTINGS } from "./settings";
 
 const MAX_TIME_SINCE_CREATION = 5000; // 5 seconds
 
@@ -40,15 +41,6 @@ function createRepresentationFromHeadings(headings) {
 
 export default class RolloverTodosPlugin extends Plugin {
   async loadSettings() {
-    const DEFAULT_SETTINGS = {
-      templateHeading: "none",
-      deleteOnComplete: false,
-      removeEmptyTodos: false,
-      rolloverChildren: false,
-      rolloverOnFileCreate: true,
-      doneStatusMarkers: "xX-",
-      leadingNewLine: true,
-    };
     this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
   }
 
@@ -198,8 +190,12 @@ export default class RolloverTodosPlugin extends Plugin {
         10000
       );
     } else {
-      const { templateHeading, deleteOnComplete, removeEmptyTodos, leadingNewLine } =
-        this.settings;
+      const {
+        templateHeading,
+        deleteOnComplete,
+        removeEmptyTodos,
+        leadingNewLine,
+      } = this.settings;
 
       // check if there is a daily note from yesterday
       const lastDailyNote = this.getLastDailyNote();
@@ -265,7 +261,9 @@ export default class RolloverTodosPlugin extends Plugin {
         if (templateHeadingSelected) {
           const contentAddedToHeading = dailyNoteContent.replace(
             templateHeading,
-            `${templateHeading}${leadingNewLine ? '\n' : ''}${todos_todayString}`
+            `${templateHeading}${
+              leadingNewLine ? "\n" : ""
+            }${todos_todayString}`
           );
           if (contentAddedToHeading == dailyNoteContent) {
             templateHeadingNotFoundMessage = `Rollover couldn't find '${templateHeading}' in today's daily not. Rolling todos to end of file.`;
