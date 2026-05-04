@@ -131,18 +131,33 @@ export default class RolloverSettingTab extends PluginSettingTab {
       );
     new Setting(this.containerEl)
       .setName("Add extra blank line between Heading and Todos")
-      .setDesc(`Whether to add an extra blank line between the selected Heading and the rolled over todos. This will only work in combination with a configured Template Heading.`)
-      .addToggle((toggle) => 
+      .setDesc(
+        `Whether to add an extra blank line between the selected Heading and the rolled over todos. This will only work in combination with a configured Template Heading.`
+      )
+      .addToggle((toggle) =>
         toggle
           .setValue(
-            this.plugin.settings
-              .leadingNewLine === undefined || 
-              this.plugin.settings.leadingNewLine === null 
-              ? true 
+            this.plugin.settings.leadingNewLine === undefined ||
+              this.plugin.settings.leadingNewLine === null
+              ? true
               : this.plugin.settings.leadingNewLine
           )
           .onChange((value) => {
             this.plugin.settings.leadingNewLine = value;
+            this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(this.containerEl)
+      .setName("Mark forwarded on rollover")
+      .setDesc(
+        `Mark incomplete todos with [>] in the previous day's note when rolled over.`
+      )
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.markForwardedOnRollover || false)
+          .onChange((value) => {
+            this.plugin.settings.markForwardedOnRollover = value;
             this.plugin.saveSettings();
           })
       );

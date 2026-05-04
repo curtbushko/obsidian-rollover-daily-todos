@@ -1,19 +1,19 @@
 project: "mark-forwarded-on-rollover"
-phase_id: 1
-phase_name: "TodoParser Exclusion"
-phase_file: "phase-01-todoparser-exclusion.md"
+phase_id: 2
+phase_name: "Settings Infrastructure"
+phase_file: "phase-02-settings-infrastructure.md"
 execution_order: [1, 2]
 tasks:
   - id: 1
-    name: "Add basic [>] exclusion logic and test"
+    name: "Add markForwardedOnRollover to DEFAULT_SETTINGS with test"
     status: completed
     deps: []
     plan_tasks:
-      - "Add `[>]` exclusion logic to TodoParser `#isTodo()` method, separate from `doneStatusMarkers`"
-      - "Write tests for `[>]` task exclusion (basic case: `[>]` tasks are not returned by getTodos)"
+      - "Add `markForwardedOnRollover: false` to DEFAULT_SETTINGS in index.js"
+      - "Write tests verifying default value is `false` and setting loads/saves correctly"
   - id: 2
-    name: "Add edge case tests for [>] exclusion"
+    name: "Add toggle UI to RolloverSettingTab"
     status: completed
     deps: [1]
     plan_tasks:
-      - "Write edge case tests: `[> ]` (space after), `[>>]` (double), mixed markers"
+      - 'Add toggle setting to RolloverSettingTab.js with description: "Mark incomplete todos with [>] in the previous day''s note when rolled over."'

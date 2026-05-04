@@ -5,14 +5,15 @@
 Covers user stories: #2, #10, #11, #12 from prd-mark-forwarded-on-rollover.md
 
 Implements modules:
+
 - Settings (DEFAULT_SETTINGS in index.js)
 - Settings UI (RolloverSettingTab.js)
 
 ## Tasks
 
-- [ ] Add `markForwardedOnRollover: false` to DEFAULT_SETTINGS in index.js
-- [ ] Add toggle setting to RolloverSettingTab.js with description: "Mark incomplete todos with [>] in the previous day's note when rolled over."
-- [ ] Write tests verifying default value is `false` and setting loads/saves correctly
+- [x] Add `markForwardedOnRollover: false` to DEFAULT_SETTINGS in index.js
+- [x] Add toggle setting to RolloverSettingTab.js with description: "Mark incomplete todos with [>] in the previous day's note when rolled over."
+- [x] Write tests verifying default value is `false` and setting loads/saves correctly
 
 ## Notes
 
