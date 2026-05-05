@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import { readFileSync, writeFileSync, statSync, readdirSync } from "fs";
-import { join, basename } from "path";
+import { readFileSync, writeFileSync, statSync, readdirSync } from 'fs';
+import { join, basename } from 'path';
 
 class TodoParser {
   // Support all unordered list bullet symbols as per spec (https://daringfireball.net/projects/markdown/syntax#list)
